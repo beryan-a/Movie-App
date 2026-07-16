@@ -12,15 +12,14 @@ function Home() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const loadPopularMovies = async ()=>{
+        const loadPopularMovies = async () => {
             try{
                 const popularMovies = await getPopularMovies();
                 setMovies(popularMovies);
             }catch(err){
                 console.log(err)
                 setError("Faild to load movies...")
-            }
-            finally{
+            }finally {
                 setLoading(false);
             }
         }
@@ -48,7 +47,8 @@ function Home() {
             setLoading(false)
         }
 
-        setSearchQuery("");
+        //optional
+        //setSearchQuery("");
     };
 
   return (
@@ -66,11 +66,12 @@ function Home() {
 
         {error && <div className='error-message'>{error}</div>}
 
-        {loading ? (<div className='loading'> Loading...</div>):(
-            <div className="movies-grid">
-            {movies.map((movie) => 
-                movie.title.toLowerCase().startsWith(searchQuery) &&(<MovieCard movie = {movie} key={movie.id}/>)
-            )}
+        {loading ? (<div className='loading'> Loading...</div>
+        ):(
+           <div className="movies-grid">
+          {movies.map((movie) => (
+            <MovieCard movie={movie} key={movie.id} />
+          ))}
         </div>
         )}
     </div>
