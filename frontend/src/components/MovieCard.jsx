@@ -1,5 +1,6 @@
 import React from 'react'
 import fav_icon from '../assets/fav_icon.svg'
+import "../css/MovieCard.css"
 
 function MovieCard({movie}) { //movie prop object = information about the movie
 

@@ -2,9 +2,12 @@ import React from 'react'
 import { useState } from 'react';
 import MovieCard from '../components/MovieCard'
 import "../css/Home.css"
+import { searchMovies, getPopularMovies } from '../services/api';
 
 function Home() {
     const [searchQuery, setSearchQuery] = useState(""); //when state changes we updated the state 
+
+    const movies = getPopularMovies()
 
     const movies = [
         {id: 1, title: "john wick", release_date: "2020"},
