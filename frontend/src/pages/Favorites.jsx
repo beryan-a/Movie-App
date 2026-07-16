@@ -6,7 +6,8 @@ import MovieCard from '../components/MovieCard'
 
 function Favorites() {
 
-  
+  const {favorites} = useMovieContext();
+
 
   return (
     <div className="favorites-empty">
