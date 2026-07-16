@@ -1,7 +1,13 @@
 import React from 'react'
 import "../css/Favorites.css"
+import { useMovieContext } from '../contexts/MovieContexts'
+import MovieCard from '../components/MovieCard'
+
 
 function Favorites() {
+
+  
+
   return (
     <div className="favorites-empty">
         <h2>No Favorite Movies Yet</h2>
