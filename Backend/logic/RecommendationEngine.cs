@@ -72,9 +72,18 @@ public class RecommendationEngine
 
     private List<string> getTopKMovies(userNode user, int K)
     {
-        Dictionary<int,double> ratings = user.getRatings();
+        Dictionary<int, double> ratings = user.getRatings();
 
-        var pq = new PriorityQueue<KeyValuePair<int, double>, double>(Comparer<double>.Create((x, y) => y.CompareTo(x)));
+        // Max-priority queue oluşturma (Rating değerine göre büyükten küçüğe sıralar)
+        var pq = new PriorityQueue<KeyValuePair<int, double>, double>(
+            Comparer<double>.Create((x, y) => y.CompareTo(x))
+        );
+
+        // Kullanıcının puanladığı tüm filmleri PriorityQueue'ya ekliyoruz
+        foreach (var kvp in ratings)
+        {
+            pq.Enqueue(kvp, kvp.Value);
+        }
         
         List<string> result = new List<string>();
         int count = 0;
@@ -82,14 +91,10 @@ public class RecommendationEngine
         while (pq.Count > 0 && count < K)
         {
             int movieId = pq.Dequeue().Key;
-            // bazı filmlerin main datada id'leri bulunuyor ancak movie.csv dosyasında o idye ait isim olmadığından 
-            // movie #id olarak default yazılmıştır.
             result.Add(movieTitles.GetValueOrDefault(movieId, "Movie #" + movieId));
             count++;
         }
 
         return result;
-
     }
-
 }
