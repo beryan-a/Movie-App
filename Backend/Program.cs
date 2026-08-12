@@ -1,41 +1,41 @@
-var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
-
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+using Backend.models;
+using Backend.logic;
+namespace Backend;
+public class Program
 {
-    app.MapOpenApi();
-}
+    public static void Main(string[] args)
+    {
+        // Metod içi yerel değişkenlerde 'private' KULLANILMAZ
+        string dataDir = "data" + Path.DirectorySeparatorChar;
 
-app.UseHttpsRedirection();
+        // Dosya okuma işlemleri
+        List<userNode> mainUsers = DataLoader.loadMainData(dataDir + "main_data.csv");
+        List<userNode> targetUsers = DataLoader.LoadTargetUsers(dataDir + "target_user.csv");
+        Dictionary<int, string> movieTitles = DataLoader.loadMovies(dataDir + "movies.csv");
+        int[] movieIdColumns = DataLoader.ParseMovieIdsFromHeader(dataDir + "main_data.csv");
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+        // Java'daki keySet() yerine C#'ta .Keys.ToList() kullanılır
+        List<int> sortedMovieIds = movieTitles.Keys.ToList();
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+        // Öneri motorunu başlatma
+        RecommendationEngine engine = new RecommendationEngine(mainUsers, movieTitles, movieIdColumns);
 
-app.Run();
+        // System.out.println yerine Console.WriteLine ve .size() yerine .Count kullanılır
+        Console.WriteLine("Total Movies: " + movieTitles.Count);
+        Console.WriteLine("Target Users: " + targetUsers.Count);
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+        // --- TEST RUN: Örnek Öneri Alma ---
+        if (targetUsers.Count > 0)
+        {
+            userNode firstTarget = targetUsers[0];
+            // En benzer X=5 kullanıcıdan K=3'er film önerisi alalım
+            List<string> recommendations = engine.getRecommendations(firstTarget.getRatings(), 5, 3);
+
+            Console.WriteLine($"\nUser {firstTarget.getUserId()} için Önerilen Filmler:");
+            foreach (var movie in recommendations)
+            {
+                Console.WriteLine("- " + movie);
+            }
+        }
+    }
 }
