@@ -17,7 +17,7 @@ public class maxHeap
 
     public maxHeap()
     { //initial values(empty)
-        root = new HeapNode(null);
+        root = null;
         size = 0; 
     }
 
@@ -74,10 +74,13 @@ public class maxHeap
 
         HeapNode lastParent = lastNode.parent;
         //lastNode u sondan çıkarmak için onun parenti ile arasındaki bağlantıyı siliyoruz
-        if (lastParent.right == lastNode) {
-            lastParent.right = null;
-        } else {
-            lastParent.left = null;
+        if(lastParent != null)
+        {
+            if (lastParent.right == lastNode) {
+                lastParent.right = null;
+            } else {
+                lastParent.left = null;
+            }
         }
         size--;
 
@@ -88,27 +91,15 @@ public class maxHeap
 
     public HeapNode findNode(int index)
     {
-        // heap index starts from 1 (0 or less invalid)
         if (index <= 0) return null;
 
-        string binaryString = Convert.ToString(index,2);
+        string binaryString = Convert.ToString(index, 2);
+        HeapNode current = root;
 
-        HeapNode current = root; // start searching from root
-
-        // Binary temsilin ilk karakteri her zaman '1' olur
-        // Bu '1' root'u temsil eder, zaten root'ta başladığımız için bunu SKIP ediyoruz
-        for (int i = 1; i < binaryString.Length; i++) {   // skip leading '1'
-            
-            // Eğer bit '0' ise:
-            // → sol çocuk (left child) yönüne git
-            if (binaryString[i] == '0') {
-                current = current.left;
-            }
-            // Eğer bit '1' ise:
-            // → sağ çocuk (right child) yönüne git
-            else {
-                current = current.right;
-            }
+        for (int i = 1; i < binaryString.Length; i++) 
+        {   
+            if (current == null) break;
+            current = (binaryString[i] == '0') ? current.left : current.right;
         }
         return current;
     }
@@ -127,14 +118,18 @@ public class maxHeap
 
     private void bubbleDown(HeapNode node)
     {
-        while (true)
+        while (node != null)
         {
             HeapNode largest = node;
 
-            if(node.left != null &&
-            node.left.data.CompareTo(largest.data) > 0)
+            if (node.left != null && node.left.data.CompareTo(largest.data) > 0)
             {
-                largest=node.right;
+                largest = node.left;
+            }
+
+            if (node.right != null && node.right.data.CompareTo(largest.data) > 0)
+            {
+                largest = node.right;
             }
 
             if(largest==node) break;
