@@ -60,7 +60,8 @@ public class userNode : IComparable<userNode>
         */
     
     }
-    public String toString() {//Nesne yazdırıldığında okunabilir çıktı üretir.
-        return "User[" + userId + ", sim=" + string.Format("%.4f", similarity) + "]";
+    public override string ToString() 
+    {
+        return $"User[{userId}, sim={similarity:F4}]";
     }
 }
