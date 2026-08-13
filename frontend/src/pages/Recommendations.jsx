@@ -33,7 +33,7 @@ function Recommendations() {
   return (
     <div className="recommendations-container" style={{padding: '2rem'}}>
       <h2>For You</h2>
-      <button onClick={loadRecommendations}>Refresh</button>
+      <button style={{backgroundColor:'#4f46e5', color: 'white'}} onClick={loadRecommendations}>Refresh</button>
 
       {loading ? (
         <p>preparin movie lib and recommendations</p>
