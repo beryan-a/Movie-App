@@ -197,6 +197,8 @@ public class DataLoader
         SaveAllUsersToCsv(filePath);
     }
 
+
+    // Tüm memoryi CSVlere yazmak için.
     public static void SaveAllUsersToCsv(string filePath)
     {
         using (StreamWriter sw = new StreamWriter(filePath, append: false))
@@ -224,4 +226,18 @@ public class DataLoader
             }
         }
     }
+
+    //api ve csvlerde movie idleri farklı olduğundan we can get movies by title and release dates
+    public static int GetMovieIdByTitle(string title)
+    {
+        //to lowercase
+        var entry = movieTitles.FirstOrDefault(x => 
+            x.Value.Equals(title, StringComparison.OrdinalIgnoreCase) ||
+            x.Value.Contains(title, StringComparison.OrdinalIgnoreCase)
+        );
+
+        return entry.Key; // Bulursa CSV'deki movieId döner, bulamazsa 0 döner
+    }
+
+
 }

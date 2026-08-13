@@ -3,7 +3,6 @@ using Backend.models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// CORS ayarı
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp",
@@ -25,47 +24,73 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// 1. DataLoader ile var olan CSV verilerini yüklüyoruz
+// 1. CSV Verilerini Yüklüyoruz
 DataLoader.loadMainData("data/main_data.csv");
 DataLoader.loadMovies("data/movies.csv");
 
-// 2. Senin RecommendationEngine sınıfından bir instance oluşturuyoruz
-var engine = new RecommendationEngine(
-    DataLoader.getMainUsers(),
-    DataLoader.getMovieTitles(),
-    DataLoader.getMovieIdColumns()
-);
 
-// Kullanıcı oylarını bellekte tutan dictionary
-var userRatingsDb = new Dictionary<int, Dictionary<int, double>>();
-
-// --- ENDPOINT 1: Film Oylama ---
-app.MapPost("/api/ratings", (MovieRatingDto dto) =>
+// --- 1. SIGNUP ENDPOINT ---
+app.MapPost("/api/auth/signup", () =>
 {
-    if (!userRatingsDb.ContainsKey(dto.UserId))
-    {
-        userRatingsDb[dto.UserId] = new Dictionary<int, double>();
-    }
-
-    userRatingsDb[dto.UserId][dto.MovieId] = dto.Score;
-
-    return Results.Ok(new { message = "Rating saved successfully" });
+    int newUserId = Random.Shared.Next(10000, 99999);
+    DataLoader.RegisterNewUserInCsv("data/main_data.csv", newUserId);
+    return Results.Ok(new { userId = newUserId, message = "Kullanıcı başarıyla oluşturuldu!" });
 });
 
-// --- ENDPOINT 2: Öneri Getirme ---
+
+// --- 2. RATING ENDPOINT (Film İsim/Yılı ile Oylama) ---
+app.MapPost("/api/ratings", (MovieRatingByTitleDto dto) =>
+{
+    // Film isminden CSV'deki gerçek MovieID'yi buluyoruz
+    int csvMovieId = DataLoader.GetMovieIdByTitle(dto.MovieTitle);
+
+    if (csvMovieId == 0)
+    {
+        return Results.BadRequest(new { message = "Film CSV kütüphanesinde bulunamadı!" });
+    }
+
+    // Oyu CSV ve Hafızaya kaydediyoruz
+    DataLoader.SaveUserRatingInMemoryAndCsv("data/main_data.csv", dto.UserId, csvMovieId, dto.Score);
+
+    return Results.Ok(new { message = "Rating başarıyla kaydedildi!", csvMovieId = csvMovieId });
+});
+
+
+// --- 3. RECOMMENDATIONS ENDPOINT ---
 app.MapGet("/api/recommendations/{userId}", (int userId, int? X, int? K) =>
 {
-    if (!userRatingsDb.TryGetValue(userId, out var targetRatings) || targetRatings.Count == 0)
+    var allUsers = DataLoader.getMainUsers();
+    var targetUser = allUsers.FirstOrDefault(u => u.getUserId() == userId);
+
+    if (targetUser == null || targetUser.getRatings().Count == 0)
     {
         return Results.Ok(new List<string>());
     }
 
-    int topUsersCount = X ?? 5;
-    int topMoviesCount = K ?? 3;
+    // Kullanıcının kendisi hariç diğer kullanıcılarla kıyaslama
+    var otherUsers = allUsers.Where(u => u.getUserId() != userId).ToList();
 
-    List<string> recommendations = engine.getRecommendations(targetRatings, topUsersCount, topMoviesCount);
+    var customEngine = new RecommendationEngine(
+        otherUsers,
+        DataLoader.getMovieTitles(),
+        DataLoader.getMovieIdColumns()
+    );
+
+    List<string> recommendations = customEngine.getRecommendations(
+        targetUser.getRatings(),
+        X ?? 5,
+        K ?? 3
+    );
 
     return Results.Ok(recommendations);
 });
 
 app.Run();
+
+// DTO Sınıfı (Artık ID yerine Film Adı alıyor)
+public class MovieRatingByTitleDto
+{
+    public int UserId { get; set; }
+    public string MovieTitle { get; set; } = string.Empty; // Örn: "Toy Story (1995)"
+    public double Score { get; set; }
+}

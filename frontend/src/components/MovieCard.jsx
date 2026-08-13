@@ -13,12 +13,12 @@ function MovieCard({movie}) {
 
     const handleRate = async(score) =>{
         setRating(score);
-        try {
-            await rateMovie(currentUserId, movie.id, score);
-            console.log(`Movie ${movie.id} rated: ${score}`);
-        } catch (err) {
-            console.error("Failed to rate movie: ", err);
-        }
+        // Film adı yıl içermiyorsa parantez içinde yılını ekleyebiliriz (Örn: "The Odyssey (2026)")
+        const fullTitleWithYear = movie.release_date 
+            ? `${movie.title} (${movie.release_date.split('-')[0]})` 
+            : movie.title;
+
+        await rateMovie(currentUserId, fullTitleWithYear, score);
     }
 
 
