@@ -15,10 +15,12 @@ function Login() {
                 background: '#fff',
                 boxShadow: '0 10px 30px rgba(0,0,0,0.1)'
             }}>
-                <h2 style={{ marginBottom: '24px', textAlign: 'center' }}>Sign in</h2>
+                <h2 style={{ marginBottom: '24px', textAlign: 'center',
+                color: "black"
+                 }}>Sign in</h2>
 
                 <form style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' ,color: "black"}}>
                         <label htmlFor="phone">Phone number</label>
                         <input
                             id="phone"
@@ -34,7 +36,7 @@ function Login() {
                         />
                     </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px',color: "black" }}>
                         <label htmlFor="password">Password</label>
                         <input
                             id="password"
@@ -67,7 +69,7 @@ function Login() {
                     </button>
                 </form>
 
-                <p style={{ marginTop: '20px', textAlign: 'center' }}>
+                <p style={{ marginTop: '20px', textAlign: 'center' ,color: "black"}}>
                     Not a member? <a href="#">Sign up now</a>
                 </p>
             </div>
