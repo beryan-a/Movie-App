@@ -122,3 +122,29 @@
     font-size: 1.2rem;
   }
 }
+
+.star-rating {
+  margin-top: 10px;
+  display: flex;
+  gap: 4px;
+}
+
+.star {
+  background-color: transparent;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.star-icon {
+  font-size: 1.4rem;
+}
+
+.star.on .star-icon {
+  color: #ffd700;
+}
+
+.star.off .star-icon {
+  color: #555;
+}

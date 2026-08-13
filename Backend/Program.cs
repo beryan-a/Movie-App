@@ -1,41 +1,71 @@
-using Backend.models;
 using Backend.logic;
-namespace Backend;
-public class Program
+using Backend.models;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// CORS ayarı
+builder.Services.AddCors(options =>
 {
-    public static void Main(string[] args)
-    {
-        // Metod içi yerel değişkenlerde 'private' KULLANILMAZ
-        string dataDir = "data" + Path.DirectorySeparatorChar;
+    options.AddPolicy("AllowReactApp",
+        policy => policy.WithOrigins("http://localhost:5173", "http://localhost:3000")
+                        .AllowAnyHeader()
+                        .AllowAnyMethod());
+});
 
-        // Dosya okuma işlemleri
-        List<userNode> mainUsers = DataLoader.loadMainData(dataDir + "main_data.csv");
-        List<userNode> targetUsers = DataLoader.LoadTargetUsers(dataDir + "target_user.csv");
-        Dictionary<int, string> movieTitles = DataLoader.loadMovies(dataDir + "movies.csv");
-        int[] movieIdColumns = DataLoader.ParseMovieIdsFromHeader(dataDir + "main_data.csv");
+builder.Services.AddOpenApi();
 
-        // Java'daki keySet() yerine C#'ta .Keys.ToList() kullanılır
-        List<int> sortedMovieIds = movieTitles.Keys.ToList();
+var app = builder.Build();
 
-        // Öneri motorunu başlatma
-        RecommendationEngine engine = new RecommendationEngine(mainUsers, movieTitles, movieIdColumns);
+app.UseCors("AllowReactApp");
 
-        // System.out.println yerine Console.WriteLine ve .size() yerine .Count kullanılır
-        Console.WriteLine("Total Movies: " + movieTitles.Count);
-        Console.WriteLine("Target Users: " + targetUsers.Count);
-
-        // --- TEST RUN: Örnek Öneri Alma ---
-        if (targetUsers.Count > 0)
-        {
-            userNode firstTarget = targetUsers[0];
-            // En benzer X=5 kullanıcıdan K=3'er film önerisi alalım
-            List<string> recommendations = engine.getRecommendations(firstTarget.getRatings(), 5, 3);
-
-            Console.WriteLine($"\nUser {firstTarget.getUserId()} için Önerilen Filmler:");
-            foreach (var movie in recommendations)
-            {
-                Console.WriteLine("- " + movie);
-            }
-        }
-    }
+if (app.Environment.IsDevelopment())
+{
+    app.MapOpenApi();
 }
+
+app.UseHttpsRedirection();
+
+// 1. DataLoader ile var olan CSV verilerini yüklüyoruz
+DataLoader.loadMainData("data/main_data.csv");
+DataLoader.loadMovies("data/movies.csv");
+
+// 2. Senin RecommendationEngine sınıfından bir instance oluşturuyoruz
+var engine = new RecommendationEngine(
+    DataLoader.getMainUsers(),
+    DataLoader.getMovieTitles(),
+    DataLoader.getMovieIdColumns()
+);
+
+// Kullanıcı oylarını bellekte tutan dictionary
+var userRatingsDb = new Dictionary<int, Dictionary<int, double>>();
+
+// --- ENDPOINT 1: Film Oylama ---
+app.MapPost("/api/ratings", (MovieRatingDto dto) =>
+{
+    if (!userRatingsDb.ContainsKey(dto.UserId))
+    {
+        userRatingsDb[dto.UserId] = new Dictionary<int, double>();
+    }
+
+    userRatingsDb[dto.UserId][dto.MovieId] = dto.Score;
+
+    return Results.Ok(new { message = "Rating saved successfully" });
+});
+
+// --- ENDPOINT 2: Öneri Getirme ---
+app.MapGet("/api/recommendations/{userId}", (int userId, int? X, int? K) =>
+{
+    if (!userRatingsDb.TryGetValue(userId, out var targetRatings) || targetRatings.Count == 0)
+    {
+        return Results.Ok(new List<string>());
+    }
+
+    int topUsersCount = X ?? 5;
+    int topMoviesCount = K ?? 3;
+
+    List<string> recommendations = engine.getRecommendations(targetRatings, topUsersCount, topMoviesCount);
+
+    return Results.Ok(recommendations);
+});
+
+app.Run();
