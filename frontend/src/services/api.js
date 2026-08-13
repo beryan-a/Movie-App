@@ -99,6 +99,14 @@ export const getRecommendations = async (userId, X = 5, K = 3) => {
   return await response.json();
 };
 
+// YENİ: Backend'de yeni kullanıcı (signup ile kayıt yapılınca)(0 puanlı) oluşturan servis
+export const signupUser = async () => {
+  const response = await fetch(`${BACKEND_URL}/auth/signup`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" }
+  });
+  return await response.json(); // { userId: 12345, message: "..." }
+};
 
 
 // export const getPopularMovies = async()=>{
