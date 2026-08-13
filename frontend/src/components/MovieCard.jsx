@@ -43,6 +43,15 @@ function MovieCard({movie}) {
             src={movie.poster_path || (movie.url ? movie.url : "https://via.placeholder.com/500x750?text=No+Poster")} 
             alt={movie.title} 
             /> */}
+            
+                {/* favorite movies */}
+            <div className="movie-overlay">
+                <button className={`favorite-btn ${favorite ? "active" : ""}`} onClick={onFavoriteClick}>
+                    ♥
+                </button>
+            </div>
+
+
         </div>
         <div className="movie-info">
             <h3>{movie.title}</h3>
