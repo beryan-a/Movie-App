@@ -6,19 +6,23 @@ import { useState } from 'react';
 import { rateMovie } from '../services/api';
 
 
-function MovieCard({movie}) {
+function MovieCard({movie, userId}) {
     const [rating, setRating] = useState(0);
     const [hover, setHover] = useState(0);
-    const currentUserId = 1;
+    const activeUserId = userId || parseInt(localStorage.getItem("userId"), 10) || 1;
 
     const handleRate = async(score) =>{
         setRating(score);
-        // Film adı yıl içermiyorsa parantez içinde yılını ekleyebiliriz (Örn: "The Odyssey (2026)")
-        const fullTitleWithYear = movie.release_date 
-            ? `${movie.title} (${movie.release_date.split('-')[0]})` 
-            : movie.title;
+        try {
+            // Film adı yıl içermiyorsa parantez içinde yılını ekleyebiliriz (Örn: "The Odyssey (2026)")
+            const fullTitleWithYear = movie.release_date 
+                ? `${movie.title} (${movie.release_date.split('-')[0]})` 
+                : movie.title;
 
-        await rateMovie(currentUserId, fullTitleWithYear, score);
+        await rateMovie(activeUserId, fullTitleWithYear, score);
+        } catch (err) {
+            console.error("Failed to rate movie: ", err);
+        }
     }
 
 

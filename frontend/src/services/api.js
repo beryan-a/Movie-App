@@ -1,6 +1,6 @@
 const API_KEY = "67af2372907b1eda796d797e247ad0da";
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
-const BACKEND_URL = "http://localhost:5192";
+const BACKEND_URL = "http://localhost:5192/api";
 
 // ==========================================
 // 1. TMDb API Servisleri (Home.jsx & Arama)
@@ -85,26 +85,29 @@ export const fetchMovieDetailsFromTMDB = async (movieTitleWithYear) => {
 // 2. C# Backend Servisleri (Rating & Öneri)
 // ==========================================
 
-export const rateMovie = async (userId, movieId, score) => {
+export const rateMovie = async (userId, movieTitle, score) => {
   const response = await fetch(`${BACKEND_URL}/ratings`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ userId, movieId, score }),
+    body: JSON.stringify({ userId, movieTitle, score }),
   });
+  if(!response.ok) throw new Error("Rating failed");
   return await response.json();
 };
 
 export const getRecommendations = async (userId, X = 5, K = 3) => {
   const response = await fetch(`${BACKEND_URL}/recommendations/${userId}?X=${X}&K=${K}`);
+  if(!response.ok) throw new Error("Get recommendations failed");
   return await response.json();
 };
 
 // YENİ: Backend'de yeni kullanıcı (signup ile kayıt yapılınca)(0 puanlı) oluşturan servis
 export const signupUser = async () => {
-  const response = await fetch(`${BACKEND_URL}/auth/signup`, {
+  const response = await fetch(`${BACKEND_URL}/auth/signup`, { // http://localhost:5192/api/auth/signup
     method: "POST",
     headers: { "Content-Type": "application/json" }
   });
+  if(!response.ok) throw new Error("Signup failed");
   return await response.json(); // { userId: 12345, message: "..." }
 };
 
