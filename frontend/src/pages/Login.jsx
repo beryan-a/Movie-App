@@ -63,7 +63,7 @@ function Login({onLoginSuccess}) {
                 color: "black"
                  }}>{isSignup ? "Sign Up" : "Login"}</h2>
 
-                {message && <p style={{ color: '#ffd700', marginBottom: '1rem' }}>{message}</p>}
+                {message && <p style={{ color: '#e60000', marginBottom: '1rem' }}>{message}</p>}
 
                 
                 {!isSignup ? (
@@ -73,7 +73,7 @@ function Login({onLoginSuccess}) {
                     <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '16px'
                      }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' ,color: "black"}}>
-                        <label htmlFor="phone">Phone number</label>
+                        <label htmlFor="phone">User ID</label>
                         <input
                             value={inputUserId}
                             type="number"
@@ -146,15 +146,17 @@ function Login({onLoginSuccess}) {
                 </form>
                 )}
 
+                {/* Login / Signup Geçiş Butonu */}
+                <div>
+                    <p onClick={() => { setIsSignup(!isSignup); setMessage(''); }} style={{ marginTop: '20px', textAlign: 'center' ,color: "black", cursor: 'pointer'}}>
+                    {isSignup ? "Already have an account? Login" : "Dont have an account ? Create new account"}
+                    </p>
+                </div>
 
 
 
 
-
-
-                <p style={{ marginTop: '20px', textAlign: 'center' ,color: "black"}}>
-                    Not a member? <a href="#">Sign up now</a>
-                </p>
+                
             </div>
         </div>
     );
