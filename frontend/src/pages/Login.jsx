@@ -5,7 +5,6 @@ function Login() {
     return (
         <LoginPage>
             <Logo />
-
             <Input name="phone" placeholder="Phone number" />
 
             <Password />
