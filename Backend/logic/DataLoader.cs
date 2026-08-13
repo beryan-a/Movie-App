@@ -157,4 +157,71 @@ public class DataLoader
         result.Add(sb.ToString());
         return result.ToArray();
     }
+
+    //write new user on csv file(probably main_data.csv)
+    public static userNode RegisterNewUserInCsv(string filePath, int newUserId)
+    {
+        int movieCount = movieIdColumns.Length;
+
+        StringBuilder sb = new StringBuilder();
+        sb.Append(newUserId);
+        for(int i=0; i<movieCount; i++)
+        {
+            sb.Append(",0"); // at beginning all movies does not rated so 0
+        }
+
+        using(StreamWriter sw = new StreamWriter(filePath, append: true))
+        {
+            sw.WriteLine(sb.ToString());
+        }
+
+        var newUserNode = new userNode(newUserId, new Dictionary<int, double>());
+        mainUsers.Add(newUserNode);
+
+        return newUserNode;
+    }
+
+    // 2. Oy Verme (Rate Movie) -> Kullanıcının hafızadaki oylarını günceller
+    public static void SaveUserRatingInMemoryAndCsv(string filePath, int userId, int movieId, double score)
+    {
+        // Hafızadaki kullanıcıyı bul ve oyunu güncelle
+        var targetUser = mainUsers.FirstOrDefault(u => u.getUserId() == userId);
+        if (targetUser != null)
+        {
+            targetUser.getRatings()[movieId] = score;
+        }
+
+        // NOT: CSV dosyasının tamamını sürekli baştan yazmak yerine 
+        // sunucu kapatılırken veya periyodik olarak CSV'ye kaydetmek çok daha performanslıdır.
+        // Ama anlık yazmak istersen dosyayı güncel verilerle baştan yazabilirsin:
+        SaveAllUsersToCsv(filePath);
+    }
+
+    public static void SaveAllUsersToCsv(string filePath)
+    {
+        using (StreamWriter sw = new StreamWriter(filePath, append: false))
+        {
+            // Header satırını yaz
+            sw.Write("user_id");
+            foreach (int colId in movieIdColumns)
+            {
+                sw.Write("," + colId);
+            }
+            sw.WriteLine();
+
+            // Tüm kullanıcıları yaz
+            foreach (var user in mainUsers)
+            {
+                sw.Write(user.getUserId());
+                var userRatings = user.getRatings();
+
+                foreach (int colId in movieIdColumns)
+                {
+                    double rating = userRatings.GetValueOrDefault(colId, 0.0);
+                    sw.Write("," + rating.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                }
+                sw.WriteLine();
+            }
+        }
+    }
 }
