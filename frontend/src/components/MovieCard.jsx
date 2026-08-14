@@ -11,19 +11,19 @@ function MovieCard({movie, userId}) {
     const [hover, setHover] = useState(0);
     const activeUserId = userId || parseInt(localStorage.getItem("userId"), 10) || 1;
 
-    const handleRate = async(score) =>{
+    const handleRate = async (score) => {
         setRating(score);
         try {
-            // Film adı yıl içermiyorsa parantez içinde yılını ekleyebiliriz (Örn: "The Odyssey (2026)")
-            const fullTitleWithYear = movie.release_date 
-                ? `${movie.title} (${movie.release_date.split('-')[0]})` 
-                : movie.title;
+            // Film yılı varsa ekle (Örn: "Toy Story (1995)")
+            const releaseYear = movie.release_date ? movie.release_date.split('-')[0] : '';
+            const fullTitle = releaseYear ? `${movie.title} (${releaseYear})` : movie.title;
 
-        await rateMovie(activeUserId, fullTitleWithYear, score);
+            await rateMovie(activeUserId, fullTitle, score);
+            console.log("Rating success for:", fullTitle);
         } catch (err) {
-            console.error("Failed to rate movie: ", err);
+            console.error("Failed to rate movie:", err);
         }
-    }
+    };
 
 
     const {isFavorite, addToFavorites, removeFromFavorites} = useMovieContext()

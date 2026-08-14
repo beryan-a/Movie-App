@@ -240,4 +240,72 @@ public class DataLoader
     }
 
 
+    public static int GetOrCreateMovie(string title, string moviesFilePath, string mainDataFilePath)
+    {
+        // 1. Önce hafızada ara
+        var match = movieTitles.FirstOrDefault(x => x.Value.Equals(title, StringComparison.OrdinalIgnoreCase));
+        if (match.Key != 0)
+        {
+            return match.Key;
+        }
+
+        // 2. Yoksa yeni Movie ID belirle
+        int newMovieId = movieTitles.Count > 0 ? movieTitles.Keys.Max() + 1 : 1;
+
+        // 3. movies.csv dosyasına yeni satır ekle
+        using (StreamWriter sw = new StreamWriter(moviesFilePath, append: true))
+        {
+            sw.WriteLine($"{newMovieId},\"{title}\"");
+        }
+        movieTitles[newMovieId] = title;
+
+        // 4. movieIdColumns dizisine yeni filmi ekle
+        var newColumns = movieIdColumns.ToList();
+        newColumns.Add(newMovieId);
+        movieIdColumns = newColumns.ToArray();
+
+        // 5. main_data.csv dosyasını yeni sütunla güncelle
+        SaveAllUsersToCsv(mainDataFilePath);
+
+        return newMovieId;
+    }
+
+
+    // 1. users.csv dosyasından kullanıcıları okuma
+    public static List<UserAccount> LoadUsers(string filePath)
+    {
+        var list = new List<UserAccount>();
+        if (!File.Exists(filePath)) return list;
+
+        using (StreamReader sr = new StreamReader(filePath))
+        {
+            sr.ReadLine(); // Header satırını atla
+            string line;
+            while ((line = sr.ReadLine()) != null)
+            {
+                if (string.IsNullOrWhiteSpace(line)) continue;
+                string[] parts = line.Split(',');
+                if (parts.Length >= 3)
+                {
+                    list.Add(new UserAccount
+                    {
+                        UserId = int.Parse(parts[0].Trim()),
+                        Username = parts[1].Trim(),
+                        Password = parts[2].Trim()
+                    });
+                }
+            }
+        }
+        return list;
+    }
+
+    // 2. Yeni kullanıcıyı users.csv dosyasına ekleme
+    public static void AppendUserToCsv(string filePath, int userId, string username, string password)
+    {
+        using (StreamWriter sw = new StreamWriter(filePath, append: true))
+        {
+            sw.WriteLine($"{userId},{username},{password}");
+        }
+    }
+
 }

@@ -39,21 +39,17 @@ app.MapPost("/api/auth/signup", () =>
 
 
 // --- 2. RATING ENDPOINT (Film İsim/Yılı ile Oylama) ---
+// --- RATING ENDPOINT ---
 app.MapPost("/api/ratings", (MovieRatingByTitleDto dto) =>
 {
-    // Film isminden CSV'deki gerçek MovieID'yi buluyoruz
-    int csvMovieId = DataLoader.GetMovieIdByTitle(dto.MovieTitle);
+    // Film varsa ID'sini alır, yoksa CSV'ye ve matrise yeni kolon olarak ekler
+    int movieId = DataLoader.GetOrCreateMovie(dto.MovieTitle, "data/movies.csv", "data/main_data.csv");
 
-    if (csvMovieId == 0)
-    {
-        return Results.BadRequest(new { message = "Film CSV kütüphanesinde bulunamadı!" });
-    }
+    DataLoader.SaveUserRatingInMemoryAndCsv("data/main_data.csv", dto.UserId, movieId, dto.Score);
 
-    // Oyu CSV ve Hafızaya kaydediyoruz
-    DataLoader.SaveUserRatingInMemoryAndCsv("data/main_data.csv", dto.UserId, csvMovieId, dto.Score);
-
-    return Results.Ok(new { message = "Rating başarıyla kaydedildi!", csvMovieId = csvMovieId });
+    return Results.Ok(new { message = "Rating başarıyla kaydedildi!", movieId = movieId });
 });
+
 
 
 // --- 3. RECOMMENDATIONS ENDPOINT ---

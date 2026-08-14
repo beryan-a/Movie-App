@@ -89,9 +89,19 @@ export const rateMovie = async (userId, movieTitle, score) => {
   const response = await fetch(`${BACKEND_URL}/ratings`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ userId, movieTitle, score }),
+    body: JSON.stringify({ 
+      UserId: parseInt(userId, 10), 
+      MovieTitle: String(movieTitle), 
+      Score: parseFloat(score) 
+    }),
   });
-  if(!response.ok) throw new Error("Rating failed");
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    console.error("Server rating error detail:", errorData);
+    throw new Error(errorData.message || "Rating failed");
+  }
+
   return await response.json();
 };
 
