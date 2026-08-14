@@ -1,167 +1,262 @@
 import { useState } from 'react';
-import { signupUser } from '../services/api';
-import '../css/App.css'; // İsteğe bağlı css
+import { signupUser, loginUser } from '../services/api';
+import '../css/App.css';
 
+function Login({ onLoginSuccess }) {
+  const [isSignup, setIsSignup] = useState(false);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [message, setMessage] = useState('');
+  const [isError, setIsError] = useState(false);
 
-function Login({onLoginSuccess}) {
-    const [isSignup, setIsSignup] = useState(false);
-    const [inputUserId, setInputUserId] = useState('');
-    const [message, setMessage] = useState('');
+  // 1. Giriş Yapma (Login)
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setMessage('');
+    setIsError(false);
 
-    //varolan userid ile giriş yapma
-    const handleLogin = (e)=>{
-        e.preventDefault();
-        if(!inputUserId){
-            setMessage("enter valid user id!");
-            return;
-        }
-        const userIdNum = parseInt(inputUserId, 10);
-        localStorage.setItem("userId", userIdNum);
-        if(onLoginSuccess) onLoginSuccess(userIdNum);
+    if (!username.trim() || !password.trim()) {
+      setMessage("Please fill in all fields!");
+      setIsError(true);
+      return;
     }
 
-    // 2. Yeni Kayıt Olma (Sign Up)
-  const handleSignup = async (e) => {
-    e.preventDefault();
     try {
-      setMessage("Kullanıcı oluşturuluyor...");
-      const data = await signupUser(); // Backend'de main_data.csv'ye yazılır
+      const data = await loginUser(username, password);
+      localStorage.setItem("userId", data.userId);
+      localStorage.setItem("username", data.username);
       
-      if (data.userId) {
-        localStorage.setItem("userId", data.userId);
-        setMessage(`Kayıt Başarılı! Sizin User ID'niz: ${data.userId}`);
-        
-        setTimeout(() => {
-          if (onLoginSuccess) onLoginSuccess(data.userId);
-        }, 1500);
+      if (onLoginSuccess) {
+        onLoginSuccess(data.userId, data.username);
       }
     } catch (err) {
-      console.error("Signup error:", err);
-      setMessage("Kayıt oluşturulurken bir hata oluştu.");
+      console.error("Login error:", err);
+      setMessage(err.message || "Invalid username or password!");
+      setIsError(true);
     }
   };
 
+  // 2. Yeni Kayıt Olma (Sign Up)
+  const handleSignup = async (e) => {
+    e.preventDefault();
+    setMessage('');
+    setIsError(false);
 
+    if (!username.trim() || !password.trim() || !confirmPassword.trim()) {
+      setMessage("Please fill in all fields!");
+      setIsError(true);
+      return;
+    }
 
-    return (
-        <div style={{
-            minHeight: '70vh',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '24px'
-        }}>
-            <div style={{
-                width: '100%',
-                maxWidth: '420px',
-                padding: '32px 24px',
-                borderRadius: '18px',
-                background: '#fff',
-                boxShadow: '0 10px 30px rgba(0,0,0,0.1)'
-            }}>
-                <h2 style={{ marginBottom: '24px', textAlign: 'center',
-                color: "black"
-                 }}>{isSignup ? "Sign Up" : "Login"}</h2>
+    if (password !== confirmPassword) {
+      setMessage("Passwords do not match!");
+      setIsError(true);
+      return;
+    }
 
-                {message && <p style={{ color: '#e60000', marginBottom: '1rem' }}>{message}</p>}
+    try {
+      setMessage("Creating accpunt...");
+      const data = await signupUser(username, password); // Backend sıradaki UserId'yi atar
+      
+      if (data.userId) {
+        localStorage.setItem("userId", data.userId);
+        localStorage.setItem("username", data.username);
+        setMessage(`Registration Successful! Welcome ${data.username}`);
+        setIsError(false);
 
-                
-                {!isSignup ? (
+        setTimeout(() => {
+          if (onLoginSuccess) {
+            onLoginSuccess(data.userId, data.username);
+          }
+        }, 1200);
+      }
+    } catch (err) {
+      console.error("Signup error:", err);
+      setMessage(err.message || "An error occurred while creating the account.");
+      setIsError(true);
+    }
+  };
 
-                    //LOGIN FORM
+  return (
+    <div style={{
+      minHeight: '70vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '24px'
+    }}>
+      <div style={{
+        width: '100%',
+        maxWidth: '420px',
+        padding: '32px 24px',
+        borderRadius: '18px',
+        background: '#fff',
+        boxShadow: '0 10px 30px rgba(0,0,0,0.1)'
+      }}>
+        <h2 style={{ marginBottom: '24px', textAlign: 'center', color: "#111" }}>
+          {isSignup ? "Create Account" : "Welcome Back"}
+        </h2>
 
-                    <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '16px'
-                     }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' ,color: "black"}}>
-                        <label htmlFor="phone">User ID</label>
-                        <input
-                            value={inputUserId}
-                            type="number"
-                            placeholder="Enter User ID"
-                            style={{
-                                padding: '12px 14px',
-                                border: '1px solid #ddd',
-                                borderRadius: '10px',
-                                fontSize: '16px'
-                            }}
-                            onChange={(e) => setInputUserId(e.target.value)}
-                        />
-                    </div>
+        {message && (
+          <div style={{
+            padding: '10px',
+            borderRadius: '8px',
+            marginBottom: '16px',
+            textAlign: 'center',
+            fontSize: '14px',
+            backgroundColor: isError ? '#ffe6e6' : '#e6ffed',
+            color: isError ? '#d32f2f' : '#2e7d32',
+            border: `1px solid ${isError ? '#ffcdd2' : '#c8e6c9'}`
+          }}>
+            {message}
+          </div>
+        )}
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px',color: "black" }}>
-                        <label htmlFor="password">Password</label>
-                        <input
-                            id="password"
-                            name="password"
-                            type="password"
-                            placeholder="Password"
-                            style={{
-                                padding: '12px 14px',
-                                border: '1px solid #ddd',
-                                borderRadius: '10px',
-                                fontSize: '16px'
-                            }}
-                        />
-                    </div>
-
-                    <button
-                        type="submit"
-                        style={{
-                            marginTop: '8px',
-                            padding: '12px 18px',
-                            border: 'none',
-                            borderRadius: '10px',
-                            background: '#4f46e5',
-                            color: '#fff',
-                            fontSize: '16px',
-                            cursor: 'pointer'
-                        }}
-                    >
-                        Login
-                    </button>
-                </form>
-                ):(
-                    //SIGNUP FORM
-
-                    <form style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' ,color: "black"}}>
-
-                        <button
-                            type="submit"
-                            style={{
-                                marginTop: '8px',
-                                padding: '12px 18px',
-                                border: 'none',
-                                borderRadius: '10px',
-                                background: '#4f46e5',
-                                color: '#fff',
-                                fontSize: '16px',
-                                cursor: 'pointer'
-                            }}
-                            onClick={handleSignup}
-                        >
-                            Signup with default ID
-                        </button>
-                    </div>
-                </form>
-                )}
-
-                {/* Login / Signup Geçiş Butonu */}
-                <div>
-                    <p onClick={() => { setIsSignup(!isSignup); setMessage(''); }} style={{ marginTop: '20px', textAlign: 'center' ,color: "black", cursor: 'pointer'}}>
-                    {isSignup ? "Already have an account? Login" : "Dont have an account ? Create new account"}
-                    </p>
-                </div>
-
-
-
-
-                
+        {!isSignup ? (
+          // ==================== LOGIN FORM ====================
+          <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', color: "#333" }}>
+              <label htmlFor="login-username" style={{ fontSize: '14px', fontWeight: 'bold' }}>Username</label>
+              <input
+                id="login-username"
+                type="text"
+                placeholder="Enter your username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                style={{
+                  padding: '12px 14px',
+                  border: '1px solid #ddd',
+                  borderRadius: '10px',
+                  fontSize: '15px'
+                }}
+              />
             </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', color: "#333" }}>
+              <label htmlFor="login-password" style={{ fontSize: '14px', fontWeight: 'bold' }}>Password</label>
+              <input
+                id="login-password"
+                type="password"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                style={{
+                  padding: '12px 14px',
+                  border: '1px solid #ddd',
+                  borderRadius: '10px',
+                  fontSize: '15px'
+                }}
+              />
+            </div>
+
+            <button
+              type="submit"
+              style={{
+                marginTop: '8px',
+                padding: '12px 18px',
+                border: 'none',
+                borderRadius: '10px',
+                background: '#4f46e5',
+                color: '#fff',
+                fontSize: '16px',
+                fontWeight: 'bold',
+                cursor: 'pointer'
+              }}
+            >
+              Login
+            </button>
+          </form>
+        ) : (
+          // ==================== SIGNUP FORM ====================
+          <form onSubmit={handleSignup} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', color: "#333" }}>
+              <label htmlFor="signup-username" style={{ fontSize: '14px', fontWeight: 'bold' }}>Username</label>
+              <input
+                id="signup-username"
+                type="text"
+                placeholder="Choose a username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                style={{
+                  padding: '12px 14px',
+                  border: '1px solid #ddd',
+                  borderRadius: '10px',
+                  fontSize: '15px'
+                }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', color: "#333" }}>
+              <label htmlFor="signup-password" style={{ fontSize: '14px', fontWeight: 'bold' }}>Password</label>
+              <input
+                id="signup-password"
+                type="password"
+                placeholder="Create a password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                style={{
+                  padding: '12px 14px',
+                  border: '1px solid #ddd',
+                  borderRadius: '10px',
+                  fontSize: '15px'
+                }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', color: "#333" }}>
+              <label htmlFor="signup-confirm-password" style={{ fontSize: '14px', fontWeight: 'bold' }}>Confirm Password</label>
+              <input
+                id="signup-confirm-password"
+                type="password"
+                placeholder="Confirm your password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                style={{
+                  padding: '12px 14px',
+                  border: '1px solid #ddd',
+                  borderRadius: '10px',
+                  fontSize: '15px'
+                }}
+              />
+            </div>
+
+            <button
+              type="submit"
+              style={{
+                marginTop: '8px',
+                padding: '12px 18px',
+                border: 'none',
+                borderRadius: '10px',
+                background: '#4f46e5',
+                color: '#fff',
+                fontSize: '16px',
+                fontWeight: 'bold',
+                cursor: 'pointer'
+              }}
+            >
+              Sign Up
+            </button>
+          </form>
+        )}
+
+        {/* Geçiş Butonu */}
+        <div style={{ marginTop: '20px', textAlign: 'center' }}>
+          <span
+            onClick={() => { 
+              setIsSignup(!isSignup); 
+              setMessage(''); 
+              setPassword('');
+              setConfirmPassword('');
+            }}
+            style={{ color: '#4f46e5', cursor: 'pointer', fontSize: '14px', fontWeight: '500' }}
+          >
+            {isSignup ? "Already have an account? Login" : "Don't have an account? Create new account"}
+          </span>
         </div>
-    );
+      </div>
+    </div>
+  );
 }
 
 export default Login;
-
-

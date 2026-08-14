@@ -8,10 +8,25 @@ namespace Backend.models
         public string Password { get; set; } = string.Empty;
     }
 
-    // Frontend'den Login ve Signup isteklerinde gelen veri modeli
+    // Login ve Signup istekleri için DTO
     public class AuthDto
     {
         public string Username { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
+    }
+
+    // Film Oylama (Rating) isteği için DTO
+    public class MovieRatingByTitleDto
+    {
+        public int UserId { get; set; }
+        public string MovieTitle { get; set; } = string.Empty;
+        public double Score { get; set; }
+    }
+
+    // Favori ekleme/çıkarma isteği için DTO
+    public class FavoriteDto
+    {
+        public int UserId { get; set; }
+        public string MovieTitle { get; set; } = string.Empty;
     }
 }

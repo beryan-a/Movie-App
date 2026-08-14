@@ -24,35 +24,73 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// 1. CSV Verilerini Yüklüyoruz
-DataLoader.loadMainData("data/main_data.csv");
+// 1. CSV Dosyalarını Yüklüyoruz
 DataLoader.loadMovies("data/movies.csv");
+DataLoader.loadMainData("data/main_data.csv");
+DataLoader.LoadUsers("data/users.csv");
 
-
-// --- 1. SIGNUP ENDPOINT ---
-app.MapPost("/api/auth/signup", () =>
+// ==========================================
+// 1. AUTH ENDPOINTS (Signup & Login)
+// ==========================================
+app.MapPost("/api/auth/signup", (AuthDto dto) =>
 {
-    int newUserId = Random.Shared.Next(10000, 99999);
-    DataLoader.RegisterNewUserInCsv("data/main_data.csv", newUserId);
-    return Results.Ok(new { userId = newUserId, message = "Kullanıcı başarıyla oluşturuldu!" });
+    var users = DataLoader.getUsersList();
+    if (users.Any(u => u.Username.Equals(dto.Username, StringComparison.OrdinalIgnoreCase)))
+    {
+        return Results.BadRequest(new { message = "Bu kullanıcı adı zaten alınmış!" });
+    }
+
+    var newUser = DataLoader.RegisterUser("data/users.csv", "data/main_data.csv", dto.Username, dto.Password);
+    return Results.Ok(new { userId = newUser.UserId, username = newUser.Username, message = "Kayıt başarılı!" });
 });
 
+app.MapPost("/api/auth/login", (AuthDto dto) =>
+{
+    var users = DataLoader.getUsersList();
+    var user = users.FirstOrDefault(u => u.Username.Equals(dto.Username, StringComparison.OrdinalIgnoreCase) && u.Password == dto.Password);
 
-// --- 2. RATING ENDPOINT (Film İsim/Yılı ile Oylama) ---
-// --- RATING ENDPOINT ---
+    if (user == null)
+    {
+        return Results.BadRequest(new { message = "Kullanıcı adı veya şifre hatalı!" });
+    }
+
+    return Results.Ok(new { userId = user.UserId, username = user.Username, message = "Giriş başarılı!" });
+});
+
+// ==========================================
+// 2. RATING ENDPOINT
+// ==========================================
 app.MapPost("/api/ratings", (MovieRatingByTitleDto dto) =>
 {
-    // Film varsa ID'sini alır, yoksa CSV'ye ve matrise yeni kolon olarak ekler
-    int movieId = DataLoader.GetOrCreateMovie(dto.MovieTitle, "data/movies.csv", "data/main_data.csv");
+    if (string.IsNullOrWhiteSpace(dto.MovieTitle))
+    {
+        return Results.BadRequest(new { message = "Film adı boş olamaz!" });
+    }
 
+    int movieId = DataLoader.GetOrCreateMovie(dto.MovieTitle, "data/movies.csv", "data/main_data.csv");
     DataLoader.SaveUserRatingInMemoryAndCsv("data/main_data.csv", dto.UserId, movieId, dto.Score);
 
     return Results.Ok(new { message = "Rating başarıyla kaydedildi!", movieId = movieId });
 });
 
+// ==========================================
+// 3. FAVORITES ENDPOINTS
+// ==========================================
+app.MapGet("/api/favorites/{userId}", (int userId) =>
+{
+    var favs = DataLoader.GetUserFavorites("data/favorites.csv", userId);
+    return Results.Ok(favs);
+});
 
+app.MapPost("/api/favorites", (FavoriteDto dto) =>
+{
+    DataLoader.ToggleFavoriteInCsv("data/favorites.csv", dto.UserId, dto.MovieTitle);
+    return Results.Ok(new { message = "Favori durumu güncellendi!" });
+});
 
-// --- 3. RECOMMENDATIONS ENDPOINT ---
+// ==========================================
+// 4. RECOMMENDATIONS ENDPOINT
+// ==========================================
 app.MapGet("/api/recommendations/{userId}", (int userId, int? X, int? K) =>
 {
     var allUsers = DataLoader.getMainUsers();
@@ -63,7 +101,7 @@ app.MapGet("/api/recommendations/{userId}", (int userId, int? X, int? K) =>
         return Results.Ok(new List<string>());
     }
 
-    // Kullanıcının kendisi hariç diğer kullanıcılarla kıyaslama
+    // Hedef kullanıcı hariç diğer tüm kullanıcılar matrisi
     var otherUsers = allUsers.Where(u => u.getUserId() != userId).ToList();
 
     var customEngine = new RecommendationEngine(
@@ -82,11 +120,3 @@ app.MapGet("/api/recommendations/{userId}", (int userId, int? X, int? K) =>
 });
 
 app.Run();
-
-// DTO Sınıfı (Artık ID yerine Film Adı alıyor)
-public class MovieRatingByTitleDto
-{
-    public int UserId { get; set; }
-    public string MovieTitle { get; set; } = string.Empty; // Örn: "Toy Story (1995)"
-    public double Score { get; set; }
-}

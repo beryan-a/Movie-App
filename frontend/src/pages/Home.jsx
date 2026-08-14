@@ -69,9 +69,13 @@ function Home() {
         {loading ? (<div className='loading'> Loading...</div>
         ):(
            <div className="movies-grid">
-          {movies.map((movie) => (
-            <MovieCard movie={movie} key={movie.id} />
-          ))}
+          {movies && movies.length > 0 ? (
+            movies.map(movie => (
+                <MovieCard movie={movie} key={movie.id} />
+            ))
+            ) : (
+            <p>Filmler yüklenemedi veya bulunamadı.</p>
+            )}
         </div>
         )}
     </div>

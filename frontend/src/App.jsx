@@ -1,55 +1,55 @@
-import React ,{ useState, useEffect } from "react";
-import "./css/App.css";
-import Favorites from "./pages/Favorites";
-import Home from "./pages/Home";
-import Recommendations from "./pages/Recommendations";
-import Login from "./pages/Login"
-import { Routes, Route, useNavigate } from "react-router-dom";
-import { MovieProvider } from "./contexts/MovieContexts";
-import NavBar from "./components/NavBar";
-
+import { Routes, Route, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import Home from './pages/Home';
+import Favorites from './pages/Favorites';
+import Recommendations from './pages/Recommendations';
+import Login from './pages/Login';
+import NavBar from './components/NavBar';
+import './css/App.css';
 
 function App() {
-
   const [currentUserId, setCurrentUserId] = useState(null);
+  const [currentUsername, setCurrentUsername] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
     const savedUserId = localStorage.getItem("userId");
-    if(savedUserId){
+    const savedUsername = localStorage.getItem("username");
+    if (savedUserId) {
       setCurrentUserId(parseInt(savedUserId, 10));
+      setCurrentUsername(savedUsername || '');
     }
-  },[]);
+  }, []);
 
-  const handleLoginSuccess = (userId) => {
+  const handleLoginSuccess = (userId, username) => {
     setCurrentUserId(userId);
-    navigate("/"); // Giriş yaptıktan sonra Ana Sayfaya git
+    setCurrentUsername(username);
+    navigate("/");
   };
 
   const handleLogout = () => {
     localStorage.removeItem("userId");
+    localStorage.removeItem("username");
     setCurrentUserId(null);
+    setCurrentUsername('');
   };
 
-  // Eğer kullanıcı giriş yapmadıysa sadece Login ekranını göster
   if (!currentUserId) {
     return <Login onLoginSuccess={handleLoginSuccess} />;
   }
 
   return (
-    <MovieProvider>
-      <NavBar userId = {currentUserId} onLogout= {handleLogout}/>
-      <main className='main-content'>
+    <div>
+      <NavBar username={currentUsername} onLogout={handleLogout} />
+      <main className="main-content">
         <Routes>
-          <Route path='/' element= {<Home userId = {currentUserId}/>} />
-          <Route path='/favorites' element= {<Favorites />} />
-          <Route path="/recommendations" element={<Recommendations userId = {currentUserId}/>} />
+          <Route path="/" element={<Home userId={currentUserId} />} />
+          <Route path="/favorites" element={<Favorites />} />
+          <Route path="/recommendations" element={<Recommendations userId={currentUserId} />} />
         </Routes>
       </main>
-    </MovieProvider>
-  )
+    </div>
+  );
 }
 
-
-
-export default App
+export default App;
