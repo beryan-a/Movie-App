@@ -10,15 +10,13 @@ namespace Backend.logic;
 public class DataLoader
 {
     private static List<userNode> mainUsers = new List<userNode>();
-    private static Dictionary<int, string> movieTitles = new Dictionary<int, string>();
+    private static Dictionary<int, string> movieTitles = new Dictionary<int, string>(); //movieId, movieTitles
     private static int[] movieIdColumns = new int[0];
     private static List<UserAccount> usersList = new List<UserAccount>();
-
     public static List<userNode> getMainUsers() => mainUsers;
     public static Dictionary<int, string> getMovieTitles() => movieTitles;
     public static int[] getMovieIdColumns() => movieIdColumns;
     public static List<UserAccount> getUsersList() => usersList;
-
     public static List<userNode> loadMainData(string filePath)
     {
         mainUsers = new List<userNode>();
@@ -27,6 +25,7 @@ public class DataLoader
         using (StreamReader sr = new StreamReader(filePath))
         {
             string headerLine = sr.ReadLine();
+            
             if (headerLine == null) return mainUsers;
 
             string[] headers = headerLine.Split(',');

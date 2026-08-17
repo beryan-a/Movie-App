@@ -6,14 +6,14 @@ public class RecommendationEngine
 {
     private List<userNode> mainUsers;
     private Dictionary<int, string> movieTitles;
-    private int[] movieIdColumns;
+    //private int[] movieIdColumns;
     //CONSTRUCTOR
     public RecommendationEngine(List<userNode> mainUsers,
     Dictionary<int, string> movieTitles, int[] movieIdColumns)
     {
         this.mainUsers = mainUsers;
         this.movieTitles=movieTitles;
-        this.movieIdColumns = movieIdColumns;
+        //this.movieIdColumns = movieIdColumns;
     }
 
     public List<string> getRecommendations(Dictionary<int, double> targetRatings, int X, int K) {
@@ -55,9 +55,8 @@ public class RecommendationEngine
             return 0.0;
         }
 
+        //Console.WriteLine(m11/(m01 + m10 + m11));
         return m11/(m01 + m10 + m11);
-
-
 
 
         // double dot = 0;
@@ -105,10 +104,11 @@ public class RecommendationEngine
         while (pq.Count > 0 && count < K)
         {
             int movieId = pq.Dequeue().Key;
+
             result.Add(movieTitles.GetValueOrDefault(movieId, "Movie #" + movieId));
+            
             count++;
         }
-
         return result;
     }
 }

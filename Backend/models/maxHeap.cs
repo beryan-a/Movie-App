@@ -34,6 +34,7 @@ public class maxHeap
     {
         HeapNode newNode = new HeapNode(user);
         size++;
+        
 
         if (root == null)
         { //empty heap(root) case
