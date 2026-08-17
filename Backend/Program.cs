@@ -32,7 +32,7 @@ DataLoader.LoadUsers("data/users.csv");
 // ==========================================
 // 1. AUTH ENDPOINTS (Signup & Login)
 // ==========================================
-app.MapPost("/api/auth/signup", (AuthDto dto) =>
+app.MapPost("/api/auth/signup", (log_sign_requests dto) =>
 {
     var users = DataLoader.getUsersList();
     if (users.Any(u => u.Username.Equals(dto.Username, StringComparison.OrdinalIgnoreCase)))
@@ -44,7 +44,7 @@ app.MapPost("/api/auth/signup", (AuthDto dto) =>
     return Results.Ok(new { userId = newUser.UserId, username = newUser.Username, message = "Registration successful!" });
 });
 
-app.MapPost("/api/auth/login", (AuthDto dto) =>
+app.MapPost("/api/auth/login", (log_sign_requests dto) =>
 {
     var users = DataLoader.getUsersList();
     var user = users.FirstOrDefault(u => u.Username.Equals(dto.Username, StringComparison.OrdinalIgnoreCase) && u.Password == dto.Password);

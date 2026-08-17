@@ -45,28 +45,43 @@ public class RecommendationEngine
 
     public static double cosineSimilarity(Dictionary<int,double> a, Dictionary<int, double>b)
     {
-        double dot = 0;
-        double normA = 0;
-        double normB =0;
-
-        foreach (KeyValuePair<int, double> e in a) {
-            double va  = e.Value; // rating of A
-            double vb = b.GetValueOrDefault(e.Key, 0.0);// B'de yoksa 0
-            dot += va  * vb;  // A·B
-            normA += va  * va; // ||A||^2
-        }
+        //jaccard
+        double m11 = a.Count + b.Count;
+        double m10 = a.Count;
+        double m01 = b.Count;
         
-        // B vector norm
-        foreach(double vb in b.Values) {
-            normB += vb * vb;
-        }
-        
-        // division by zero protection!!!
-        if (normA == 0 || normB == 0) {
+        if((m01 + m10 + m11) == 0)
+        {
             return 0.0;
         }
 
-        return dot / (Math.Sqrt(normA) * Math.Sqrt(normB));
+        return m11/(m01 + m10 + m11);
+
+
+
+
+        // double dot = 0;
+        // double normA = 0;
+        // double normB =0;
+
+        // foreach (KeyValuePair<int, double> e in a) {
+        //     double va  = e.Value; // rating of A
+        //     double vb = b.GetValueOrDefault(e.Key, 0.0);// B'de yoksa 0
+        //     dot += va  * vb;  // A·B
+        //     normA += va  * va; // ||A||^2
+        // }
+        
+        // // B vector norm
+        // foreach(double vb in b.Values) {
+        //     normB += vb * vb;
+        // }
+        
+        // // division by zero protection!!!
+        // if (normA == 0 || normB == 0) {
+        //     return 0.0;
+        // }
+
+        // return dot / (Math.Sqrt(normA) * Math.Sqrt(normB));
     }
 
     private List<string> getTopKMovies(userNode user, int K)
