@@ -10,7 +10,7 @@ const BACKEND_URL = "http://localhost:5192/api"; // Backend'in çalıştığı a
 export const getPopularMovies = async () => {
   try {
     const response = await fetch(`${TMDB_BASE_URL}/movie/popular?api_key=${API_KEY}`);
-    if (!response.ok) throw new Error("TMDb API isteği başarısız oldu");
+    if (!response.ok) throw new Error("TMDb API request failed");
     const data = await response.json();
     return data.results || [];
   } catch (error) {
@@ -210,7 +210,7 @@ export const signupUser = async (username, password) => {
 // Favorileri Backend CSV'den Getirme (EKSİK OLAN FONKSİYON 1)
 export const getFavoritesFromDb = async (userId) => {
   const response = await fetch(`${BACKEND_URL}/favorites/${userId}`);
-  if (!response.ok) throw new Error("Favoriler getirilemedi");
+  if (!response.ok) throw new Error("errorrrrrrr");
   return await response.json();
 };
 
@@ -221,7 +221,7 @@ export const toggleFavoriteInDb = async (userId, movieTitle) => {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ userId: parseInt(userId, 10), movieTitle })
   });
-  if (!response.ok) throw new Error("Favori güncellenemedi");
+  if (!response.ok) throw new Error("Favori update failed");
   return await response.json();
 };
 

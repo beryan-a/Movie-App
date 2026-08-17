@@ -47,8 +47,8 @@ function Home() {
             setLoading(false)
         }
 
-        //optional
-        //setSearchQuery("");
+        
+        //setSearchQuery(""); //optional
     };
 
   return (
@@ -74,7 +74,7 @@ function Home() {
                 <MovieCard movie={movie} key={movie.id} />
             ))
             ) : (
-            <p>Filmler yüklenemedi veya bulunamadı.</p>
+            <p>The movies could not be loaded or found.</p>
             )}
         </div>
         )}

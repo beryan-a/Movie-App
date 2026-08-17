@@ -7,7 +7,6 @@ public class RecommendationEngine
     private List<userNode> mainUsers;
     private Dictionary<int, string> movieTitles;
     private int[] movieIdColumns;
-
     //CONSTRUCTOR
     public RecommendationEngine(List<userNode> mainUsers,
     Dictionary<int, string> movieTitles, int[] movieIdColumns)

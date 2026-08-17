@@ -37,11 +37,11 @@ app.MapPost("/api/auth/signup", (AuthDto dto) =>
     var users = DataLoader.getUsersList();
     if (users.Any(u => u.Username.Equals(dto.Username, StringComparison.OrdinalIgnoreCase)))
     {
-        return Results.BadRequest(new { message = "Bu kullanıcı adı zaten alınmış!" });
+        return Results.BadRequest(new { message = "This username is already taken!" });
     }
 
     var newUser = DataLoader.RegisterUser("data/users.csv", "data/main_data.csv", dto.Username, dto.Password);
-    return Results.Ok(new { userId = newUser.UserId, username = newUser.Username, message = "Kayıt başarılı!" });
+    return Results.Ok(new { userId = newUser.UserId, username = newUser.Username, message = "Registration successful!" });
 });
 
 app.MapPost("/api/auth/login", (AuthDto dto) =>
@@ -51,10 +51,10 @@ app.MapPost("/api/auth/login", (AuthDto dto) =>
 
     if (user == null)
     {
-        return Results.BadRequest(new { message = "Kullanıcı adı veya şifre hatalı!" });
+        return Results.BadRequest(new { message = "Username or password is incorrect!" });
     }
 
-    return Results.Ok(new { userId = user.UserId, username = user.Username, message = "Giriş başarılı!" });
+    return Results.Ok(new { userId = user.UserId, username = user.Username, message = "Login successful!" });
 });
 
 // ==========================================
@@ -64,13 +64,13 @@ app.MapPost("/api/ratings", (MovieRatingByTitleDto dto) =>
 {
     if (string.IsNullOrWhiteSpace(dto.MovieTitle))
     {
-        return Results.BadRequest(new { message = "Film adı boş olamaz!" });
+        return Results.BadRequest(new { message = "Movie title cannot be empty!" });
     }
 
     int movieId = DataLoader.GetOrCreateMovie(dto.MovieTitle, "data/movies.csv", "data/main_data.csv");
     DataLoader.SaveUserRatingInMemoryAndCsv("data/main_data.csv", dto.UserId, movieId, dto.Score);
 
-    return Results.Ok(new { message = "Rating başarıyla kaydedildi!", movieId = movieId });
+    return Results.Ok(new { message = "Rating saved successfully!", movieId = movieId });
 });
 
 // ==========================================
@@ -85,7 +85,7 @@ app.MapGet("/api/favorites/{userId}", (int userId) =>
 app.MapPost("/api/favorites", (FavoriteDto dto) =>
 {
     DataLoader.ToggleFavoriteInCsv("data/favorites.csv", dto.UserId, dto.MovieTitle);
-    return Results.Ok(new { message = "Favori durumu güncellendi!" });
+    return Results.Ok(new { message = "Favorite status updated!" });
 });
 
 // ==========================================

@@ -26,7 +26,7 @@ function Favorites() {
         // Boş dönmeyenleri state'e basıyoruz
         setFavoriteMovies(movieDetails.filter(m => m !== null));
       } catch (err) {
-        console.error("Favoriler yüklenemedi:", err);
+        console.error("Error occured during loading:", err);
       } finally {
         setLoading(false);
       }
@@ -37,9 +37,9 @@ function Favorites() {
 
   return (
     <div className="favorites" style={{ padding: '2rem' }}>
-      <h2>Favori Filmleriniz</h2>
+      <h2>Your favorites movies</h2>
       {loading ? (
-        <p>Favoriler yükleniyor...</p>
+        <p>Favorites loading...</p>
       ) : favoriteMovies.length > 0 ? (
         <div className="movies-grid">
           {favoriteMovies.map((movie) => (
@@ -47,7 +47,7 @@ function Favorites() {
           ))}
         </div>
       ) : (
-        <p>Henüz favorilere eklenmiş bir film bulunmuyor.</p>
+        <p>There are no movies added to favorites yet.</p>
       )}
     </div>
   );

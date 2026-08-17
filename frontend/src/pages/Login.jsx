@@ -10,7 +10,7 @@ function Login({ onLoginSuccess }) {
   const [message, setMessage] = useState('');
   const [isError, setIsError] = useState(false);
 
-  // 1. Giriş Yapma (Login)
+  // 1. Login
   const handleLogin = async (e) => {
     e.preventDefault();
     setMessage('');
@@ -26,7 +26,7 @@ function Login({ onLoginSuccess }) {
       const data = await loginUser(username, password);
       localStorage.setItem("userId", data.userId);
       localStorage.setItem("username", data.username);
-      
+
       if (onLoginSuccess) {
         onLoginSuccess(data.userId, data.username);
       }
@@ -37,7 +37,7 @@ function Login({ onLoginSuccess }) {
     }
   };
 
-  // 2. Yeni Kayıt Olma (Sign Up)
+  // 2. Sign Up
   const handleSignup = async (e) => {
     e.preventDefault();
     setMessage('');
@@ -56,13 +56,13 @@ function Login({ onLoginSuccess }) {
     }
 
     try {
-      setMessage("Creating accpunt...");
-      const data = await signupUser(username, password); // Backend sıradaki UserId'yi atar
-      
+      setMessage("Creating account...");
+      const data = await signupUser(username, password);
+
       if (data.userId) {
         localStorage.setItem("userId", data.userId);
         localStorage.setItem("username", data.username);
-        setMessage(`Registration Successful! Welcome ${data.username}`);
+        setMessage(`Registration successful! Welcome ${data.username}`);
         setIsError(false);
 
         setTimeout(() => {
@@ -240,12 +240,11 @@ function Login({ onLoginSuccess }) {
           </form>
         )}
 
-        {/* Geçiş Butonu */}
         <div style={{ marginTop: '20px', textAlign: 'center' }}>
           <span
-            onClick={() => { 
-              setIsSignup(!isSignup); 
-              setMessage(''); 
+            onClick={() => {
+              setIsSignup(!isSignup);
+              setMessage('');
               setPassword('');
               setConfirmPassword('');
             }}
